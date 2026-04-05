@@ -28,12 +28,12 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     @Transactional(readOnly = true)
     public DashboardSummaryResponse getSummary(int monthsBack) {
-        // ---- 1. Top-level totals ----------------------------------------
+        // 1. Top-level totals 
         BigDecimal totalIncome   = transactionRepository.sumByType(TransactionType.INCOME);
         BigDecimal totalExpenses = transactionRepository.sumByType(TransactionType.EXPENSE);
         BigDecimal netBalance    = totalIncome.subtract(totalExpenses);
 
-        // ---- 2. Category totals -------------------------------------------
+        // 2. Category totals 
         List<Object[]> rawCategories = transactionRepository.sumGroupedByCategory();
         Map<String, BigDecimal> categoryTotals = new LinkedHashMap<>();
         for (Object[] row : rawCategories) {
@@ -42,14 +42,14 @@ public class DashboardServiceImpl implements DashboardService {
             categoryTotals.put(category, total);
         }
 
-        // ---- 3. Recent transactions ---------------------------------------
+        // 3. Recent transactions
         List<TransactionResponse> recent = transactionRepository
                 .findRecentTransactions(PageRequest.of(0, RECENT_LIMIT))
                 .stream()
                 .map(TransactionResponse::from)
                 .toList();
 
-        // ---- 4. Monthly trends --------------------------------------------
+        // 4. Monthly trends
         int clampedMonths = Math.max(1, Math.min(monthsBack, 24));
         LocalDate startDate = LocalDate.now()
                 .withDayOfMonth(1)

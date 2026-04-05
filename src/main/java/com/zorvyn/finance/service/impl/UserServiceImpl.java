@@ -97,9 +97,7 @@ public class UserServiceImpl implements UserService {
         return UserResponse.from(currentUser);
     }
 
-    // --------------------------------------------------------
     // Helpers
-    // --------------------------------------------------------
 
     private User findUserOrThrow(Long id) {
         return userRepository.findById(id)

@@ -23,9 +23,7 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    // --------------------------------------------------------
     // Validation errors  (400)
-    // --------------------------------------------------------
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidation(
@@ -55,9 +53,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ApiResponse.error(msg));
     }
 
-    // --------------------------------------------------------
     // Domain exceptions
-    // --------------------------------------------------------
 
     @ExceptionHandler(AppExceptions.ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFound(
@@ -93,9 +89,7 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
-    // --------------------------------------------------------
     // Spring Security exceptions
-    // --------------------------------------------------------
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
@@ -109,9 +103,7 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("Account is disabled. Please contact an administrator."));
     }
 
-    // --------------------------------------------------------
     // Catch-all  (500)
-    // --------------------------------------------------------
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneric(Exception ex) {

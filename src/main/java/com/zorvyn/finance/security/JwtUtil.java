@@ -27,9 +27,7 @@ public class JwtUtil {
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
-    // --------------------------------------------------------
     // Token Generation
-    // --------------------------------------------------------
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
@@ -48,9 +46,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // --------------------------------------------------------
     // Token Validation
-    // --------------------------------------------------------
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
@@ -61,9 +57,7 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    // --------------------------------------------------------
     // Claims Extraction
-    // --------------------------------------------------------
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

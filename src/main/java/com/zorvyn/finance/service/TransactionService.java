@@ -17,4 +17,9 @@ public interface TransactionService {
     TransactionResponse updateTransaction(Long id, TransactionRequest request, User currentUser);
 
     void deleteTransaction(Long id, User currentUser);
+
+    /**
+     * Exports filtered transactions to a CSV byte array.
+     */
+    byte[] exportTransactionsToCsv(com.zorvyn.finance.dto.request.TransactionFilterRequest filter);
 }

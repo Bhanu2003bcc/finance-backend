@@ -1,5 +1,6 @@
 package com.zorvyn.finance.service.impl;
 
+import com.opencsv.CSVWriter;
 import com.zorvyn.finance.dto.request.TransactionFilterRequest;
 import com.zorvyn.finance.dto.request.TransactionRequest;
 import com.zorvyn.finance.dto.response.TransactionResponse;
@@ -18,6 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -95,9 +100,46 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("Transaction {} soft-deleted by {}", id, currentUser.getEmail());
     }
 
-    // --------------------------------------------------------
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] exportTransactionsToCsv(TransactionFilterRequest filter) {
+        // Fetch ALL matching transactions (bypassing pagination for export)
+        List<Transaction> transactions = transactionRepository.findAll(
+                TransactionSpecification.withFilters(filter),
+                Sort.by(Sort.Direction.DESC, "date", "createdAt")
+        );
+
+        StringWriter stringWriter = new StringWriter();
+
+        try (CSVWriter csvWriter = new CSVWriter(stringWriter)) {
+            // 1. Write the CSV Header Row
+            String[] header = { "Transaction ID", "Type", "Amount", "Category", "Date", "Notes", "Created By", "Created At" };
+            csvWriter.writeNext(header);
+
+            // 2. Write the Data Rows
+            for (Transaction t : transactions) {
+                String[] data = {
+                        String.valueOf(t.getId()),
+                        t.getType().name(),
+                        String.valueOf(t.getAmount()),
+                        t.getCategory(),
+                        t.getDate().toString(),
+                        t.getNotes() != null ? t.getNotes() : "",
+                        t.getCreatedBy().getEmail(),
+                        t.getCreatedAt().toString()
+                };
+                csvWriter.writeNext(data);
+            }
+        } catch (Exception e) {
+            log.error("Failed to generate CSV export", e);
+            throw new RuntimeException("Error generating CSV file");
+        }
+
+        // Return as a UTF-8 byte array ready for HTTP transmission
+        return stringWriter.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
     // Helpers
-    // --------------------------------------------------------
 
     private Transaction findActiveTransactionOrThrow(Long id) {
         return transactionRepository.findByIdAndDeletedFalse(id)

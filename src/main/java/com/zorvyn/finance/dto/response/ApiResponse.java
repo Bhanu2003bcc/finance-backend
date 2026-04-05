@@ -32,9 +32,7 @@ public class ApiResponse<T> {
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 
-    // --------------------------------------------------------
     // Factory helpers
-    // --------------------------------------------------------
 
     public static <T> ApiResponse<T> success(String message, T data) {
         return ApiResponse.<T>builder()

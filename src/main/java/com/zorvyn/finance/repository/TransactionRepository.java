@@ -19,17 +19,13 @@ import java.util.Optional;
 public interface TransactionRepository extends JpaRepository<Transaction, Long>,
         JpaSpecificationExecutor<Transaction> {
 
-    // --------------------------------------------------------
     // Basic finders (soft-delete aware)
-    // --------------------------------------------------------
 
     Optional<Transaction> findByIdAndDeletedFalse(Long id);
 
     Page<Transaction> findAllByDeletedFalse(Pageable pageable);
 
-    // --------------------------------------------------------
     // Dashboard aggregations
-    // --------------------------------------------------------
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
            "WHERE t.type = :type AND t.deleted = false")
@@ -43,9 +39,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
            "ORDER BY t.date DESC, t.createdAt DESC")
     List<Transaction> findRecentTransactions(Pageable pageable);
 
-    // --------------------------------------------------------
     // Monthly trend aggregation
-    // --------------------------------------------------------
 
     @Query(value = """
         SELECT
@@ -60,18 +54,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
         """, nativeQuery = true)
     List<Object[]> findMonthlyTrends(@Param("startDate") LocalDate startDate);
 
-    // --------------------------------------------------------
     // Category-wise filtered totals
-    // --------------------------------------------------------
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
            "WHERE t.type = :type AND t.category = :category AND t.deleted = false")
     BigDecimal sumByTypeAndCategory(@Param("type") TransactionType type,
                                     @Param("category") String category);
 
-    // --------------------------------------------------------
     // Existence check for user-owned transaction (used in delete/update)
-    // --------------------------------------------------------
 
     boolean existsByIdAndDeletedFalse(Long id);
 }

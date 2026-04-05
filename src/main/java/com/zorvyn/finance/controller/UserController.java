@@ -26,9 +26,7 @@ public class UserController {
 
     private final UserService userService;
 
-    // --------------------------------------------------------
     // Self — any authenticated user
-    // --------------------------------------------------------
 
     @GetMapping("/me")
     @Operation(summary = "Get current user's profile")
@@ -38,9 +36,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(userService.getMyProfile(currentUser)));
     }
 
-    // --------------------------------------------------------
     // ADMIN-only endpoints
-    // --------------------------------------------------------
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")

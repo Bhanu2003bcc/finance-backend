@@ -20,19 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-/**
- * Spring Security configuration.
- *
- * Route-level access rules:
- *  - /api/auth/**              → public (login / register)
- *  - GET /api/transactions/**  → VIEWER, ANALYST, ADMIN
- *  - GET /api/dashboard/**     → VIEWER, ANALYST, ADMIN
- *  - POST/PUT/DELETE /api/transactions/** → ANALYST, ADMIN
- *  - /api/users/**             → ADMIN only
- *
- * Fine-grained checks are also enforced at service level via
- * @PreAuthorize annotations (EnableMethodSecurity).
- */
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity

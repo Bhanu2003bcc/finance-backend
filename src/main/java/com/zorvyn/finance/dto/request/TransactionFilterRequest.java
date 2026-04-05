@@ -6,10 +6,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
-/**
- * Query parameters for filtering/searching transactions.
- * All fields are optional — omitting a field means "no filter on that field".
- */
+
 @Data
 public class TransactionFilterRequest {
 

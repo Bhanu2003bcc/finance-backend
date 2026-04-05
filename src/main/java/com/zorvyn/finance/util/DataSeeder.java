@@ -9,15 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-/**
- * Seeds a default ADMIN user on first startup.
- * This ensures there is always at least one admin account
- * to bootstrap user and role management.
- *
- * Default credentials (change immediately in production):
- *   Email:    admin@zorvyn.io
- *   Password: Admin@1234
- */
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -26,8 +18,8 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private static final String ADMIN_EMAIL    = "admin@zorvyn.io";
-    private static final String ADMIN_PASSWORD = "Admin@1234";
+    private static final String ADMIN_EMAIL    = "Bhanu12@gmail.com";
+    private static final String ADMIN_PASSWORD = "Bhanu@1234";
     private static final String ADMIN_NAME     = "System Admin";
 
     @Override

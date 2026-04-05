@@ -3,9 +3,7 @@ package com.zorvyn.finance.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-// ============================================================
 //  Domain Exceptions
-// ============================================================
 
 public final class AppExceptions {
 

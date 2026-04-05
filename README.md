@@ -40,15 +40,15 @@ A production-grade Finance Data Processing and Access Control backend built with
 ## Architecture Overview
 
 ```
-Request → JwtAuthenticationFilter → SecurityFilterChain
-                                          │
-                                    Controller
-                                          │
-                                      Service
-                                          │
-                                   Repository (JPA)
-                                          │
-                                     PostgreSQL
+Request → RateLimiter →JwtAuthenticationFilter → SecurityFilterChain
+                                                       │
+                                                   Controller
+                                                       │
+                                                    Service
+                                                       │
+                                                  Repository (JPA)
+                                                       │
+                                                   PostgreSQL
 ```
 
 The project follows a strict layered architecture:
@@ -103,6 +103,8 @@ src/main/java/com/zorvyn/finance/
 │   └── TransactionSpecification.java # Dynamic filter predicates
 ├── security/
 │   ├── JwtUtil.java                  # Token generation & validation
+│   ├── RateLimitingService           # This help RateLimitFilter
+│   ├── RateLimitFilter               # Restrict 1 IP address to 5 request per minute only in login or register
 │   └── JwtAuthenticationFilter.java  # OncePerRequestFilter
 ├── service/
 │   ├── AuthService.java
@@ -265,6 +267,7 @@ All responses use the envelope:
 |--------|---------------------------|---------------------|-------------------------------------|
 | POST   | `/api/transactions`       | ANALYST, ADMIN      | Create a financial record           |
 | GET    | `/api/transactions`       | All roles           | List with filters + pagination      |
+| GET    | `/api/transactions/export`| All roles           | List with filters + CSV export      |
 | GET    | `/api/transactions/{id}`  | All roles           | Get single transaction              |
 | PUT    | `/api/transactions/{id}`  | ANALYST(own), ADMIN | Update a transaction                |
 | DELETE | `/api/transactions/{id}`  | ANALYST(own), ADMIN | Soft-delete a transaction           |
@@ -393,6 +396,10 @@ Client                        Server
 7. **Pagination** — All list endpoints return paginated responses. Page size is clamped to a max of 100 to prevent unbounded queries.
 
 8. **Monthly trend query** — Uses a native PostgreSQL `TO_CHAR(date, 'YYYY-MM')` query for efficient server-side aggregation rather than pulling raw rows and grouping in Java.
+
+9. **CSV Exporting** — The /api/transactions/export endpoint leverages OpenCSV to generate downloadable files. Unlike the standard read APIs, the export service deliberately bypasses the 100-item pagination clamp to aggregate all matching records based on the provided filters, returning the raw data as a UTF-8 byte stream alongside a Content-Disposition: attachment header.
+
+10. **API Rate Limiting** — Public authentication endpoints (/api/auth/**) are protected against brute-force attacks and bot spam using the Bucket4j library. A custom OncePerRequestFilter implements the Token Bucket algorithm—tracking client IP addresses via an in-memory ConcurrentHashMap—to restrict usage to a defined capacity (e.g., 5 requests per minute) and returns a 429 Too Many Requests status with standard X-Rate-Limit-* headers when exhausted.
 
 ---
 

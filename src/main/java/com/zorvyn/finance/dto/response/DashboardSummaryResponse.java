@@ -24,7 +24,6 @@ public class DashboardSummaryResponse {
     /** Recent N transactions */
     private List<TransactionResponse> recentTransactions;
 
-    /** Month (yyyy-MM) → {income, expense} */
     private List<MonthlyTrend> monthlyTrends;
 
     @Data

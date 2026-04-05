@@ -19,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 
@@ -31,9 +33,7 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    // --------------------------------------------------------
     // Create — ANALYST, ADMIN
-    // --------------------------------------------------------
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ANALYST', 'ADMIN')")
@@ -48,9 +48,7 @@ public class TransactionController {
                 .body(ApiResponse.success("Transaction created successfully", created));
     }
 
-    // --------------------------------------------------------
     // Read — VIEWER, ANALYST, ADMIN
-    // --------------------------------------------------------
 
     @GetMapping
     @Operation(summary = "List transactions with optional filters [ALL ROLES]",
@@ -107,9 +105,7 @@ public class TransactionController {
                 ApiResponse.success(transactionService.getTransactionById(id)));
     }
 
-    // --------------------------------------------------------
     // Update — ANALYST (own), ADMIN (any)
-    // --------------------------------------------------------
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ANALYST', 'ADMIN')")
@@ -123,9 +119,7 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.success("Transaction updated successfully", updated));
     }
 
-    // --------------------------------------------------------
     // Delete (soft) — ANALYST (own), ADMIN (any)
-    // --------------------------------------------------------
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ANALYST', 'ADMIN')")
@@ -138,5 +132,42 @@ public class TransactionController {
 
         transactionService.deleteTransaction(id, currentUser);
         return ResponseEntity.ok(ApiResponse.success("Transaction deleted successfully", null));
+    }
+
+    @GetMapping("/export")
+    @Operation(summary = "Export transactions to CSV [ALL ROLES]",
+            description = "Downloads a CSV file of transactions based on provided filters.")
+    public ResponseEntity<byte[]> exportTransactions(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String keyword) {
+
+        // Build the filter request (ignoring pagination)
+        TransactionFilterRequest filter = new TransactionFilterRequest();
+        filter.setCategory(category);
+        filter.setStartDate(startDate);
+        filter.setEndDate(endDate);
+        filter.setKeyword(keyword);
+
+        if (type != null && !type.isBlank()) {
+            try {
+                filter.setType(com.zorvyn.finance.model.TransactionType.valueOf(type.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new com.zorvyn.finance.exception.AppExceptions.BadRequestException(
+                        "Invalid type value '" + type + "'. Use INCOME or EXPENSE.");
+            }
+        }
+
+        // Generate the CSV binary data
+        byte[] csvData = transactionService.exportTransactionsToCsv(filter);
+
+        // Configure headers to trigger a file download in the client
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=transactions_export.csv");
+        headers.setContentType(MediaType.parseMediaType("text/csv"));
+
+        return new ResponseEntity<>(csvData, headers, HttpStatus.OK);
     }
 }
